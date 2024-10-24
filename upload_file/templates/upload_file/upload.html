@@ -276,10 +276,11 @@
         systems: -1
     };
 
+    // Define all dropdown data (owner, industry, skills, systems)
     const owners = ["Alessio Montaruli", "Lara Croci", "Chiara Giacoletti", "Maurizio Mangia", "Anna Renna",
         "Camilla Ruzzarin", "Chiara Santoro", "Sonia Sarnataro", "Milena Vitale", "Manuel D'Angelo",
         "Lorenzo Sartori", "Deniz Ozbasaran"];
-    
+
     const industries = ["Electrical/Electronic Manufacturing", "Consumer Electronics", "Facility and Environmental Services",
         "Financial Services", "Food & Beverages", "Industrial Automation", "Insurance", "Industrial",
         "Railroad Manufacturing", "Transportation/Trucking/Railroad", "Airlines/Aviation", "Fashion & Luxury",
@@ -294,8 +295,7 @@
         "Information Technology & Services", "Research", "Reinsurance", "Hotel & Restaurant",
         "Trademarks & Patents", "Beauty & Cosmetics", "Jewelry and Watches", "Engineering"];
 
-    const skills = [
-        "Act - GI - Pricing - Accident", "Act - GI - Pricing - Health", "Act - GI Pricing", "Act - GI Reporting",
+    const skills = ["Act - GI - Pricing - Accident", "Act - GI - Pricing - Health", "Act - GI Pricing", "Act - GI Reporting",
         "Act - GI Reserving", "Act - Life Pricing", "Act - Life Reporting", "Act - Life Reserving", "Act - Pension",
         "Audit - External", "Audit - Internal", "Audit - Investment/Fund", "Audit - IT", "Automotive - Fleet Security",
         "Banking - Adv Private <30M", "Banking - Adv Private >30M", "Banking - Advisor Affluent <15M", "Banking - Advisor Private >50M",
@@ -378,8 +378,7 @@
         "UW - Medmal", "UW - Retail"];
 
 
-    const systemsMethods = [
-        "Angular", "Angular 7", "AngularJS", "CSS", "Database MySQL", "Database Oracle", "Database Postgres", "Database SQL", "Database SQLite", "HTML",
+    const systemsMethods = ["Angular", "Angular 7", "AngularJS", "CSS", "Database MySQL", "Database Oracle", "Database Postgres", "Database SQL", "Database SQLite", "HTML",
         "Microsoft", "SAP AM Asset Management", "SAP BC Basic Component", "SAP CO Controlling", "SAP CRM", "SAP CS Customer Service", "SAP ERP",
         "SAP FI Financial Accounting", "SAP FI-CA", "SAP HR Human Resources", "SAP LE Logistic Execution", "SAP MM Materials Management",
         "SAP PM Plant Maintenance", "SAP PP Production Planning", "SAP PS Project System", "SAP QM Quality Management", "SAP SD Sales and Distribution",
@@ -428,7 +427,9 @@
     // Function to Filter and Show Suggestions
     function filterSuggestions(input, items) {
         const query = input.value.toLowerCase();
-        return items.filter(item => item.toLowerCase().includes(query));
+        const priorityMatches = items.filter(item => item.toLowerCase().startsWith(query));
+        const secondaryMatches = items.filter(item => !item.toLowerCase().startsWith(query) && item.toLowerCase().includes(query));
+        return [...priorityMatches, ...secondaryMatches];
     }
 
     // Populate Dropdowns with Filtered Items
@@ -572,10 +573,19 @@
         .then(data => {
             if (data.result === 'success') {
                 alert('Form submitted successfully!');
+
+                // Trigger the download of the updated CSV file
+                const link = document.createElement('a');
+                link.href = data.file_url;
+                link.download = 'updated_data.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
                 // Optionally reset the form
                 document.getElementById('upload-form').reset();
             } else {
-                alert('Error: ' + data.error);
+                alert('Error: ' + data.message);
             }
         })
         .catch(error => {

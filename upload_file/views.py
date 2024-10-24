@@ -96,8 +96,8 @@ def file_upload(request):
                 master_csv_writer = csv.writer(master_csvfile)
                 master_csv_writer.writerow([owner, industry, skills, systems_methods, ticket_name, ', '.join(file_urls)])
 
-            # Return success response with the file URL
-            return JsonResponse({'result': 'success', 'file_url': request.build_absolute_uri(os.path.join(settings.MEDIA_URL, 'uploads', 'data.csv'))})
+            # Return success response with the updated CSV file URL for download
+            return JsonResponse({'result': 'success', 'file_url': request.build_absolute_uri(file_url)})
 
         except Exception as e:
             return JsonResponse({'result': 'error', 'message': str(e)}, status=500)
