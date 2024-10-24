@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Form</title>
+    <style>
+        /* Basic Reset */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: #ffffff;
+            padding: 25px 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+        }
+
+        /* Form Title */
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* Labels */
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555555;
+        }
+
+        /* Inputs and Selects */
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus,
+        select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        /* Required Field Indicator */
+        input[required] {
+            border: 1px solid red;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Tags Input Styles */
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            border: 1px solid #ccc;
+            padding: 5px 35px 5px 10px;
+            border-radius: 4px;
+            position: relative;
+            min-height: 44px;
+        }
+
+        .tags-input input {
+            border: none;
+            flex: 1;
+            padding: 5px;
+            min-width: 150px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .tag {
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            padding: 5px 8px;
+            margin: 2px;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .tag .remove-tag {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #777777;
+        }
+
+        /* Toggle Button Styles */
+        .toggle-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #555555;
+            padding: 5px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-button:focus {
+            outline: none;
+        }
+
+        .toggle-button.rotate {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* Dropdown List Styles */
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            border-radius: 0 0 4px 4px;
+            display: none;
+        }
+
+        .dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover,
+        .highlight {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 20px 15px;
+                width: 90%;
+            }
+
+            .submit-btn {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .toggle-button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>File Upload Form</h2>
+    <form id="upload-form" action="{% url 'file_upload' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Owner Field with Toggle Button -->
+        <div class="form-group required" style="position: relative;">
+            <label for="owner">Owner</label>
+            <div id="owner-container" class="tags-input">
+                <input type="text" id="owner-input" name="owner" required aria-required="true" placeholder="Enter owner name">
+                <button type="button" class="toggle-button" id="owner-toggle" aria-label="Toggle Owner List">&#9660;</button>
+                <div id="owner-dropdown" class="dropdown" role="listbox" aria-label="Owner List"></div>
+            </div>
+        </div>
+
+        <!-- Industry Field with Toggle Button -->
+        <div class="form-group required" style="position: relative;">
+            <label for="industry">Industry</label>
+            <div id="industry-container" class="tags-input">
+                <input type="text" id="industry-input" name="industry" required aria-required="true" placeholder="Enter industry">
+                <button type="button" class="toggle-button" id="industry-toggle" aria-label="Toggle Industry List">&#9660;</button>
+                <div id="industry-dropdown" class="dropdown" role="listbox" aria-label="Industry List"></div>
+            </div>
+        </div>
+
+        <!-- Skills Field with Toggle Button -->
+        <div class="form-group required" style="position: relative;">
+            <label for="skills">Skills</label>
+            <div id="skills-container" class="tags-input">
+                <input type="text" id="skills-input" name="skills" required aria-required="true" placeholder="Add skills">
+                <button type="button" class="toggle-button" id="skills-toggle" aria-label="Toggle Selected Skills">&#9660;</button>
+                <div id="skills-dropdown" class="dropdown" role="listbox" aria-label="Skills List"></div>
+            </div>
+        </div>
+
+        <!-- Systems & Methods Field with Toggle Button -->
+        <div class="form-group optional" style="position: relative;">
+            <label for="systems-methods">Systems & Methods</label>
+            <div id="systems-container" class="tags-input">
+                <input type="text" id="systems-input" name="systems-methods" aria-autocomplete="list" aria-controls="systems-dropdown" aria-haspopup="true" aria-expanded="false" placeholder="Add systems & methods">
+                <button type="button" class="toggle-button" id="systems-toggle" aria-label="Toggle Selected Systems & Methods">&#9660;</button>
+                <div id="systems-dropdown" class="dropdown" role="listbox" aria-label="Systems & Methods List"></div>
+            </div>
+        </div>
+
+        <!-- Ticket Name Field -->
+        <div class="form-group required">
+            <label for="ticket-name">Ticket Name</label>
+            <input type="text" id="ticket-name" name="ticket-name" required aria-required="true" placeholder="Enter ticket name">
+        </div>
+
+        <!-- File Upload Field -->
+        <div class="form-group required">
+            <label for="fileUpload">Upload Files</label>
+            <input type="file" id="fileUpload" name="files[]" multiple required aria-required="true">
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn">Submit</button>
+    </form>
+</div>
+
+<script>
+    // Track selected index for each dropdown
+    let currentIndexes = {
+        owner: -1,
+        industry: -1,
+        skills: -1,
+        systems: -1
+    };
+
+    const owners = ["Alessio Montaruli", "Lara Croci", "Chiara Giacoletti", "Maurizio Mangia", "Anna Renna",
+        "Camilla Ruzzarin", "Chiara Santoro", "Sonia Sarnataro", "Milena Vitale", "Manuel D'Angelo",
+        "Lorenzo Sartori", "Deniz Ozbasaran"];
+    
+    const industries = ["Electrical/Electronic Manufacturing", "Consumer Electronics", "Facility and Environmental Services",
+        "Financial Services", "Food & Beverages", "Industrial Automation", "Insurance", "Industrial",
+        "Railroad Manufacturing", "Transportation/Trucking/Railroad", "Airlines/Aviation", "Fashion & Luxury",
+        "Automotive", "Rental", "Aviation & Aerospace", "Biotechnology", "Media & Entertainment",
+        "Building Materials", "Chemicals", "Real Estate", "IT, Software and Gaming", "Construction",
+        "FMCG", "Aerospace & Defense", "Banking", "Investment Banking", "Asset Management",
+        "Private Equity & Venture Capital", "Private Banking / Wealth Management", "Legal & Tax",
+        "Leisure, Travel & Tourism", "Consulting Services", "Medical Devices", "Non-Profit",
+        "Pharmaceuticals", "Health Care & Hospitals", "Marketing & Advertising", "Oil, Gas & Energy",
+        "Utilities", "Shipbuilding", "Supermarkets", "Telecommunications", "Tobacco",
+        "TLC-Mobile Payments/VAS", "Package/Freight Delivery", "Retail", "Corporate Functions",
+        "Information Technology & Services", "Research", "Reinsurance", "Hotel & Restaurant",
+        "Trademarks & Patents", "Beauty & Cosmetics", "Jewelry and Watches", "Engineering"];
+
+    const skills = [
+        "Act - GI - Pricing - Accident", "Act - GI - Pricing - Health", "Act - GI Pricing", "Act - GI Reporting",
+        "Act - GI Reserving", "Act - Life Pricing", "Act - Life Reporting", "Act - Life Reserving", "Act - Pension",
+        "Audit - External", "Audit - Internal", "Audit - Investment/Fund", "Audit - IT", "Automotive - Fleet Security",
+        "Banking - Adv Private <30M", "Banking - Adv Private >30M", "Banking - Advisor Affluent <15M", "Banking - Advisor Private >50M",
+        "BD - Innovation - Partnership", "BD - Innovation - Product Development", "BD - Scouting", "Biostatistician", "Cat - Modeling",
+        "Cat. Protette", "CEO/General Manager", "Change - Digital Trasformation", "Change - Organization", "Change - PM Business",
+        "Change - PM IT", "Change - PMO", "Claims - L&H", "Claims - Liability", "Claims - Medmal", "Claims - Property",
+        "Comm - Cost Controller", "Compl - AML", "Compl - Antibribary", "Compl - Corporate Governance", "Compl - Documentation",
+        "Compl - KYC", "Compl - Product", "Compliance - AFC Sanctions", "Contractor", "COO", "Data - Analytics", "Data - BI",
+        "Data - CDO", "Data - Engineering", "Data - Governance", "Data - Machine Learning", "Data - Warehousing",
+        "Debt Capital Markets - Credit Risk", "Debt Capital Markets - Origination", "Design - Interaction", "Design - UX/UI", "Design - Visual",
+        "Eng - Asset Manager", "Eng - Build / Construction", "Eng - Data Scientist", "Eng - Design", "Eng - Electrical",
+        "Eng - General", "Eng - Industrial Automation", "Eng - Maintenance", "Eng - Management", "Eng - Manuf/Production",
+        "Eng - Mechanical", "Eng - Operational Excellence", "Eng - Process Reengineering", "Eng - Quality Management", "Eng - R&D",
+        "ENG - Reliability", "Eng - Sales", "EPM - Enterprise Performance Management", "ERP - Enterprise Resource Planning", "Fashion - Creative Director",
+        "Fashion - Cut - Textile", "Fashion Cut - Leather", "Fashion - Industrialization Bag", "Fashion - Industrialization Shoe",
+        "Fashion - Metal Hardware", "Fashion - Model Design", "Fashion - PD", "Fin - Accounting",
+        "Fin - Alternative Investment - Private Debt", "Fin - Alternative Investment - Private Equity", "Fin - Asset Management",
+        "Fin - CFO", "Fin - Chief Investment Officer", "Fin Consolidated", "Fin - Controlling", "Fin - Controlling - Cost",
+        "Fin - Controlling - Industrial", "Fin Controlling - Marketing", "Fin - Controlling - Sales", "Fin - Corporate F. M&A - Transaction Services",
+        "Fin - Corporate F. M&A FIG", "Fin - Corporate F. M&A Ind.", "Fin - Corporate Treasury", "Fin - Credit Man.", "Fin - ESG",
+        "Fin - Finance Director", "Fin - Private Debt - Execution", "Fin - Private Debt - Monitoring", "Fin - Private Debt - Origination",
+        "Fin - Private Equity - Execution", "Fin - Private Equity - Monitoring", "Fin - Private Equity - Origination", "Fin - Private Equity / Venture Capital",
+        "Fin - Public Debt - Execution", "Fin - Public Debt - Monitoring", "Fin - Public Debt - Origination", "Fin - Purchasing - Product",
+        "Fin - Purchasing - Visual Merchandising", "Fin - Purchasing - MKT", "Fin - Purchasing - Retail", "Fin - Reporting",
+        "Fin - Strategic Planning", "Fin - Structured Finance", "Fin - Trading", "Fin - Trading - Commodities", "Fin - Valuations",
+        "Fin - Wealth Management", "FP&A - Corporate", "FP&A - Industrial", "FS - Asset Allocation", "FS - Econometrician", "FS - Macroeconomist",
+        "FS - Strategy", "Hospitality - Sous-chef", "Hospitality - Bartender", "Hospitality - Beverage Manager", "Hospitality - Chef de cuisine",
+        "Hospitality - Chef de partie", "Hospitality - Events Manager", "Hospitality - Executive chef", "Hospitality - Executive sous-chef",
+        "Hospitality - F&B Director", "Hospitality - F&B Manager", "Hospitality - Front Desk Assistant", "Hospitality - Front Desk Manager",
+        "Hospitality - Hotel Manager", "Hospitality - Maitre", "Hospitality - Room Manager", "Hospitality - Waiter", "HR - Admin & Payroll",
+        "HR - BP - Corporate", "HR - BP - Plant", "HR - Cost Controller", "HR - Director", "HR - Employer Branding", "HR - IT Systems",
+        "HR - Manager", "HR - Organization", "HR - Spec Comp & Ben", "HR - Spec Executive Coaching", "HR - Spec Industrial Rel",
+        "HR - Spec Organization", "HR - Spec Training & Dev", "HR - Talent Acquisition", "HR - Transformation", "IND - Packaging",
+        "INS - Broker", "INS - Broker - EB", "INS - Broker - Property & Liability", "INS - Claims", "INS - Contact Center", "INS - Network Health",
+        "INS - Operation", "INS - Product Development", "INS - Sales Welfare", "loT - Firmware Development", "loT - Hardware Development",
+        "IT - Application", "IT - Architecture", "IT - Business Analyst", "IT - Cloud", "IT - CTO/CIO", "IT - Cyber Security",
+        "IT - Cyber Security OT/SCADA", "IT - Cyber Security Pen Testing", "IT - Data Architect", "IT - DataBase Administrator (DBA)",
+        "IT - Demand Manager", "IT - Development", "IT - DevOps Engineer", "IT - Digital Expert", "IT - Enterprise Architect",
+        "IT - Functional Analyst", "IT - Governance", "IT - Help Desk", "IT - Infrastructure", "IT - IT Manager", "IT - Manager", "IT - PM",
+        "IT - Process Automation", "IT - Scrum Master", "IT - Service", "IT - Service Manager", "IT - Solution Architect", "IT - Team LeaderCom",
+        "IT - Technical Consultant", "IT - Test Engineer", "Legal - Administrative", "Legal - Administrative - Public Law", "Legal - Arbitration",
+        "Legal - B&F", "Legal - B&F - Acquisition Finance", "Legal - B&F - Capital Markets", "Legal - B&F - Corporate Finance", "Legal - B&F - DCM",
+        "Legal - B&F - ECM", "Legal - B&F - Leveraged Finance", "Legal - B&F - NPLs", "Legal - B&F - Private Equity", "Legal - B&F - Project Finance",
+        "Legal - B&F - Real Estate Finance", "Legal - B&F - Structured", "Legal - B&F - Loans", "Legal - Commercial", "Legal - Competition & Antitrust",
+        "Legal - Compliance", "Legal - Corporate", "Legal - Criminal", "Legal - Energy", "Legal - Environmental", "Legal - Food", "Legal - General Counsel",
+        "Legal - HealthCare", "Legal - In House", "Legal - Insurance", "Legal - IP", "Legal - IT", "Legal - Labour", "Legal - Litigation",
+        "Legal - Litigation - B&F", "Legal - M&A", "Legal - M&A - Corporate", "Legal - M&A - Private Equity", "Legal - M&A - Public",
+        "Legal - M&A - Real Estate", "Legal - M&A - Venture Capital", "Legal - Media", "Legal - Pharma & Biomedical", "Legal - Privacy",
+        "Legal - Private Equity", "Legal - Real Estate", "Legal - Regulatory", "Legal - Regulatory - B&F", "Legal - Restructuring",
+        "Legal - Restructuring - Distressed M&A", "Legal - Restructuring - Insolvency", "Legal - Restructuring - Debito", "Legal - Shipping, Aviation and Transportation",
+        "Legal - Sport", "Legal - Tax", "Legal - Tax - Corporate", "Legal - Tax - Cross Border/ International", "Legal - Tax - Finance",
+        "Legal - Tax - Labour", "Legal - Tax - Litigation", "Legal - Tax - M&A e Distressed M&A", "Legal - Tax - Natural Person",
+        "Legal - Tax - ONG", "Legal - Tax - Private Equity", "Legal - Tax - Real Estate", "Legal - Tax - Transfer Pricing",
+        "Legal - Tax - VAT, Import/Export", "Legal - TMT", "Luxury - Watchmaker", "Macroeconomist", "Macroeconomist - RE",
+        "Mkt - Bids Proposals & RFP", "Mkt - Brand", "Mkt - CMO", "Mkt - Cost Controller", "Mkt - Creative & Design", "Mkt - CRM",
+        "Mkt - CRM - Customer Insights", "Mkt CRM - Customer Journey", "Mkt - CRM - Loyalty/Delighting", "Mkt - Customer Acquisition",
+        "Mkt - Customer Experience", "Mkt - Digital", "Mkt - Ecommerce", "Mkt - Head of E-Commerce", "Mkt - Licensing", "Mkt - Market Research",
+        "Mkt - Merchandising", "Mkt - Omnichannel", "Mkt - Partnership", "Mkt - PM", "Mkt - PR & Communication", "Mkt - Product",
+        "Mkt - Quantitative", "Mkt - Social", "Mkt - Strategy", "NY - Attorney", "Op - A&R Specialist", "Op - Product Costing",
+        "Op - Product Design", "Op - Product Development", "Op - Product Manager", "Op - Production Planner", "Op - S&D Specialist",
+        "Op - Supply Planner", "Ops - Presales", "PA - Executive Assistant", "PD - Pricing/Revenue Management", "Pharm - Biotech",
+        "Pharm - Quality", "Pharm - R&D", "Pharm - Regulatory", "Pharm - Regulatory - REACH", "PM - General", "Possible - Contractor",
+        "Production - Time & Methods", "RE - Architect", "RE - Facility Management", "RE - Property Management", "RE - Transaction",
+        "Real Estate - Asset Management", "Real Estate - Fund Management", "Real Estate - Fund Management (Debt)", "Real Estate - Valuation",
+        "Reg - Capital Man.", "Reg - Pillar II", "Reg Pillar III", "Rental - Remarketing", "Retail - ICT Manager", "Risk - ALM/SAA",
+        "Risk - Cat", "Risk - Credit", "Risk - Credit Rating", "Risk - Credit Rating - FIG", "Risk - Credit Rating - Structured",
+        "Risk - CRO", "Risk - ERM", "Risk - Financial", "Risk - Healthcare", "Risk - Insurance GI", "Risk - Insurance Life",
+        "Risk - Market", "Risk - Operational", "Risk - Validation", "RLT - Store Planning", "RTL - Back Office", "RTL - Marketing",
+        "RTL - Operations", "RTL - Retail Excellence/Performance", "RTL - Sales", "RTL - Store Manager", "RTL - Training", "Sales - Account Management",
+        "Sales - BD", "Sales - Customer Service", "Sales - Director", "Sales - Export", "Sales - Export TEM", "Sales - Medical Advisor",
+        "Sales - Medical Liason", "Sales - Technical Advisor", "SC - Purchasing", "SC Demand Planning", "SC Direct Procurement",
+        "SC Indirect Procurement", "SC Inventory Management", "SC Logistics", "SC Production Planning", "SC Sales Forecasting",
+        "SC Supply Chain Director", "SC Supply Chain Management", "SC Vendor Management", "Security Physical", "Tax", "Tax - Corporate",
+        "Tax - Cross Border/International", "Tax - Finance", "Tax In House", "Tax - Labour", "Tax - Litigation", "Tax - M&A e Distressed M&A",
+        "Tax - Natural Person", "Tax - ONG", "Tax - Private Equity", "Tax - Real Estate", "Tax - Transfer Pricing", "Tax - VAT, Import/Export",
+        "Toxicologist - Forensic", "Toxicologist - Healthcare", "Toxicologist - Industrial - Medical Devices", "Toxicologist - Industrial - Cosmetics",
+        "Toxicologist - Industrial - Eco", "Toxicologist - Industrial - Food", "Toxicologist - Industrial - Pharma", "Toxicologist - Trials",
+        "Toxicologist - Veterinarian", "Trainer", "UK - Barrister", "UK - Solicitor", "UW - A&H", "UW - Assistance", "UW - Corporate - Fin Lines",
+        "UW - Credit & Surety", "UW - Cyber", "UW - EB", "UW - Flexible Benefits", "UW - General Liability", "UW - Life", "UW - Marine",
+        "UW - Medmal", "UW - Retail"];
+
+
+    const systemsMethods = [
+        "Angular", "Angular 7", "AngularJS", "CSS", "Database MySQL", "Database Oracle", "Database Postgres", "Database SQL", "Database SQLite", "HTML",
+        "Microsoft", "SAP AM Asset Management", "SAP BC Basic Component", "SAP CO Controlling", "SAP CRM", "SAP CS Customer Service", "SAP ERP",
+        "SAP FI Financial Accounting", "SAP FI-CA", "SAP HR Human Resources", "SAP LE Logistic Execution", "SAP MM Materials Management",
+        "SAP PM Plant Maintenance", "SAP PP Production Planning", "SAP PS Project System", "SAP QM Quality Management", "SAP SD Sales and Distribution",
+        "SAP WM Warehouse Management", "Typescript", "XML", "Xamarin Android", "Xamarin iOS", "ZUCCHETTI ERP", "IFRS", "SOX", "US Gaap",
+        "Reg - Solvency II", "Reg - Basel III", "Excel - VBA", "Prophet", "Prophet ALS", "Moses / RaFM", "Moses / RaFM C-ALM", "MG Alfa",
+        "C/C++/C#", "Matlab", "SAS", "Java", "Datastream", "Cerved", "Bureau Van dijck", "Algo", "R", "Hadoop", "Spark", "Catia", "SolidWorks",
+        "Autocad", "Bloomberg", "Cognos", "Crystal", "SAP Business Objects", "Tableau", "SAP", "SAP FI", "SAP CO", "SAP SD", "SAP PP", "SAP MM",
+        "SAP QM", "SAP HCM", "SAP FICO", "Oracle-JD Edwards", "Hyperion", "Swift", ".net", "PHP", "Python", "Ruby", "SQL", "Cobol", "Perl",
+        "Six Sigma Black Belt", "Lean Six Sigma", "WCM Kaizen", "Fashion-Leather Exp.", "Fashion-Sartorial Exp.", "Fashion-Shoes Exp.",
+        "Fashion-Glasses Exp.", "C#", "C++", "Asp.net", "Aspen", "JavaScript", "Xamarin", "IOS", "Android", "Team Leading", "Cloudera", "Hortonworks",
+        "No SQL", "Cloud (Amazon)", "Cloud (Google)", "Tagetik", "Zucchetti", "Scala", "Salesforce-CRM", "Microsoft Dynamics-CRM", "Google Adwords",
+        "Six Sigma", "Lean", "Waterfall", "Agile", "Prince", "Prince2", "LEGO", "PNL", "GDPR", "IoT", "Artificial Intelligence", "Blockchain", "WMS",
+        "Emblem / Radar", "Database Mongo DB", "Database Microsoft SQL Server", "Database IBM DB2", "ETL", "ETL - SSIS", "ETL - IBM Data Stage",
+        "Power BI", "Qlik", "Dundas BI", "ClicData", "Exago", "PL-SQL", "MDX", "Sofia", "React", "Express", "NodeJs", "Ionic", "JQuery", "Git Lab",
+        "GitLab Jenkins", "SASS", "NGRX", "Nativescript", "Vue.js", "Docker EE", "Bootstrap", "SAP-ABAP", "IFRS17", "IFRS9", "Legge 68/99",
+        "German GAAP", "Stealth 3000", "Stealth 3000 - produzione", "Stealth 3000 - retail", "Stealth 3000 - distribuzione", "Stealth AS400", "Igloo",
+        "262/05", "231/01", "ResQ", "Oracle NetSuite", "French Gaap", "AWS (Amazon Web Services)", "Azure", "Kubernetes", "Terraform", "Ansible",
+        "Prometheus", "Grafana", "Elasticsearch", "Redis", "Kafka", "RabbitMQ", "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "Pandas", "NumPy",
+        "Flask", "Django", "FastAPI", "OpenCV", "Selenium", "JIRA", "Confluence", "Jira Service Desk", "Microservices", "REST API", "GraphQL",
+        "Azure DevOps", "Vue.js", "Svelte", "Laravel", "Spring Boot", "Express.js", "Ruby on Rails", "Helm", "Puppet", "Chef", "SaltStack",
+        "Nagios", "Splunk", "New Relic", "Datadog", "Zabbix", "Graylog", "Logstash", "Elastic Stack", "Airflow", "Luigi", "Kibana", "Jaeger",
+        "OpenTelemetry", "ELK Stack", "ActiveMQ", "ZeroMQ", "Apache Kafka", "Confluent", "NATS", "Postman", "Swagger", "CircleCI", "Travis CI",
+        "GitHub Actions", "GitLab CI", "Bamboo", "TeamCity", "SonarQube", "Nexus", "Redux", "Ember.js", "Meteor", "Backbone.js", "Mocha", "Chai",
+        "Jest", "Cypress", "Webpack", "Rollup", "Parcel", "Dart", "Flutter", "React Native", "Ionic", "Cordova", "Electron", "Unity", "Unreal Engine",
+        "OpenGL", "Vulkan", "DirectX", "CUDA", "OpenCL", "Haskell", "Erlang", "Scala", "Groovy", "Kotlin", "SwiftUI", "RxJava", "RxJS", "RxSwift",
+        "Realm", "Firebase", "Parse", "Cassandra", "MongoDB", "CouchDB", "Redis", "SQLite", "MariaDB", "Percona", "Memcached", "RabbitMQ", "ZeroMQ",
+        "NATS", "ActiveMQ", "Beanstalkd", "Elasticsearch", "Solr", "Lucene", "Neo4j", "ArangoDB", "GraphQL", "Falcor", "JSON API", "RESTful API",
+        "SOAP", "gRPC", "GraphQL Yoga"];
+
+
+    const ownerInput = document.getElementById('owner-input');
+    const industryInput = document.getElementById('industry-input');
+    const skillsInput = document.getElementById('skills-input');
+    const systemsInput = document.getElementById('systems-input');
+
+    const ownerToggle = document.getElementById('owner-toggle');
+    const industryToggle = document.getElementById('industry-toggle');
+    const skillsToggle = document.getElementById('skills-toggle');
+    const systemsToggle = document.getElementById('systems-toggle');
+
+    const ownerDropdown = document.getElementById('owner-dropdown');
+    const industryDropdown = document.getElementById('industry-dropdown');
+    const skillsDropdown = document.getElementById('skills-dropdown');
+    const systemsDropdown = document.getElementById('systems-dropdown');
+
+    // Function to Filter and Show Suggestions
+    function filterSuggestions(input, items) {
+        const query = input.value.toLowerCase();
+        return items.filter(item => item.toLowerCase().includes(query));
+    }
+
+    // Populate Dropdowns with Filtered Items
+    function populateDropdown(dropdown, items, inputElement, indexName) {
+        dropdown.innerHTML = ''; // Clear existing items
+        const filteredItems = filterSuggestions(inputElement, items);
+        filteredItems.forEach((item, index) => {
+            const dropdownItem = document.createElement('div');
+            dropdownItem.classList.add('dropdown-item');
+            dropdownItem.textContent = item;
+            dropdownItem.setAttribute('role', 'option');
+            if (index === currentIndexes[indexName]) {
+                dropdownItem.classList.add('highlight'); // Highlight current item
+            }
+            dropdown.appendChild(dropdownItem);
+
+            // Click Event to Select Item
+            dropdownItem.addEventListener('click', function () {
+                inputElement.value = item; // Set the selected value
+                dropdown.classList.remove('show');
+                currentIndexes[indexName] = -1; // Reset index after selection
+            });
+        });
+        if (filteredItems.length > 0) {
+            dropdown.classList.add('show');
+        } else {
+            dropdown.classList.remove('show');
+        }
+    }
+
+    // Handle Key Down Events for Navigation
+    function handleKeyDown(event, dropdown, items, inputElement, indexName) {
+        const dropdownItems = dropdown.querySelectorAll('.dropdown-item');
+        if (!dropdownItems.length) return;
+
+        if (event.key === 'ArrowDown') {
+            currentIndexes[indexName] = (currentIndexes[indexName] + 1) % dropdownItems.length;
+        } else if (event.key === 'ArrowUp') {
+            currentIndexes[indexName] = (currentIndexes[indexName] - 1 + dropdownItems.length) % dropdownItems.length;
+        } else if (event.key === 'Enter' && currentIndexes[indexName] >= 0) {
+            dropdownItems[currentIndexes[indexName]].click();
+            return;
+        }
+
+        // Update dropdown with the new highlighted item
+        populateDropdown(dropdown, items, inputElement, indexName);
+    }
+
+    // Event Listeners for Input Fields
+    ownerInput.addEventListener('input', () => {
+        currentIndexes.owner = -1; // Reset index on new input
+        populateDropdown(ownerDropdown, owners, ownerInput, 'owner');
+    });
+    industryInput.addEventListener('input', () => {
+        currentIndexes.industry = -1; // Reset index on new input
+        populateDropdown(industryDropdown, industries, industryInput, 'industry');
+    });
+    skillsInput.addEventListener('input', () => {
+        currentIndexes.skills = -1; // Reset index on new input
+        populateDropdown(skillsDropdown, skills, skillsInput, 'skills');
+    });
+    systemsInput.addEventListener('input', () => {
+        currentIndexes.systems = -1; // Reset index on new input
+        populateDropdown(systemsDropdown, systemsMethods, systemsInput, 'systems');
+    });
+
+    // Event Listeners for Toggle Buttons
+    ownerToggle.addEventListener('click', function (event) {
+        event.stopPropagation(); // Prevent triggering document click
+        if (!ownerDropdown.classList.contains('show')) {
+            populateDropdown(ownerDropdown, owners, ownerInput, 'owner');
+        }
+        ownerDropdown.classList.toggle('show');
+    });
+
+    industryToggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        if (!industryDropdown.classList.contains('show')) {
+            populateDropdown(industryDropdown, industries, industryInput, 'industry');
+        }
+        industryDropdown.classList.toggle('show');
+    });
+
+    skillsToggle.addEventListener('click', function (event) {
+        event.stopPropagation(); // Prevent triggering document click
+        if (!skillsDropdown.classList.contains('show')) {
+            populateDropdown(skillsDropdown, skills, skillsInput, 'skills');
+        }
+        skillsDropdown.classList.toggle('show');
+    });
+
+    systemsToggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        if (!systemsDropdown.classList.contains('show')) {
+            populateDropdown(systemsDropdown, systemsMethods, systemsInput, 'systems');
+        }
+        systemsDropdown.classList.toggle('show');
+    });
+
+    // Handle Keydown for Inputs
+    ownerInput.addEventListener('keydown', (event) => handleKeyDown(event, ownerDropdown, owners, ownerInput, 'owner'));
+    industryInput.addEventListener('keydown', (event) => handleKeyDown(event, industryDropdown, industries, industryInput, 'industry'));
+    skillsInput.addEventListener('keydown', (event) => handleKeyDown(event, skillsDropdown, skills, skillsInput, 'skills'));
+    systemsInput.addEventListener('keydown', (event) => handleKeyDown(event, systemsDropdown, systemsMethods, systemsInput, 'systems'));
+
+    // Hide Dropdowns When Clicking Outside
+    document.addEventListener('click', function (event) {
+        if (!document.getElementById('skills-container').contains(event.target)) {
+            skillsDropdown.classList.remove('show');
+            currentIndexes.skills = -1; // Reset index
+        }
+        if (!document.getElementById('systems-container').contains(event.target)) {
+            systemsDropdown.classList.remove('show');
+            currentIndexes.systems = -1;
+        }
+        if (!document.getElementById('owner-container').contains(event.target)) {
+            ownerDropdown.classList.remove('show');
+            currentIndexes.owner = -1;
+        }
+        if (!document.getElementById('industry-container').contains(event.target)) {
+            industryDropdown.classList.remove('show');
+            currentIndexes.industry = -1;
+        }
+    });
+
+    // Handle Form Submission
+    document.getElementById('upload-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('{% url "file_upload" %}', {  // Ensure this URL matches your Django URL name
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.result === 'success') {
+                alert('Form submitted successfully!');
+                // Optionally reset the form
+                document.getElementById('upload-form').reset();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to submit form. Please try again.');
+        });
+    });
+</script>
+
+</body>
+</html>
