@@ -377,7 +377,6 @@
         "UW - Credit & Surety", "UW - Cyber", "UW - EB", "UW - Flexible Benefits", "UW - General Liability", "UW - Life", "UW - Marine",
         "UW - Medmal", "UW - Retail"];
 
-
     const systemsMethods = ["Angular", "Angular 7", "AngularJS", "CSS", "Database MySQL", "Database Oracle", "Database Postgres", "Database SQL", "Database SQLite", "HTML",
         "Microsoft", "SAP AM Asset Management", "SAP BC Basic Component", "SAP CO Controlling", "SAP CRM", "SAP CS Customer Service", "SAP ERP",
         "SAP FI Financial Accounting", "SAP FI-CA", "SAP HR Human Resources", "SAP LE Logistic Execution", "SAP MM Materials Management",
@@ -424,19 +423,19 @@
     const skillsDropdown = document.getElementById('skills-dropdown');
     const systemsDropdown = document.getElementById('systems-dropdown');
 
-    // Function to Filter and Show Suggestions
-    function filterSuggestions(input, items) {
-        const query = input.value.toLowerCase();
-        const priorityMatches = items.filter(item => item.toLowerCase().startsWith(query));
-        const secondaryMatches = items.filter(item => !item.toLowerCase().startsWith(query) && item.toLowerCase().includes(query));
-        return [...priorityMatches, ...secondaryMatches];
+    // Function to Filter Suggestions Based on Input
+    function filterSuggestions(query, items) {
+        query = query.toLowerCase();
+        // Priority: Items starting with query before dash, then items containing query
+        const startsWithMatches = items.filter(item => item.toLowerCase().split(' - ')[0].startsWith(query));
+        const secondaryMatches = items.filter(item => item.toLowerCase().includes(query) && !item.toLowerCase().split(' - ')[0].startsWith(query));
+        return [...startsWithMatches, ...secondaryMatches];
     }
 
-    // Populate Dropdowns with Filtered Items
+    // Function to Populate Dropdowns with Items
     function populateDropdown(dropdown, items, inputElement, indexName) {
         dropdown.innerHTML = ''; // Clear existing items
-        const filteredItems = filterSuggestions(inputElement, items);
-        filteredItems.forEach((item, index) => {
+        items.forEach((item, index) => {
             const dropdownItem = document.createElement('div');
             dropdownItem.classList.add('dropdown-item');
             dropdownItem.textContent = item;
@@ -453,12 +452,63 @@
                 currentIndexes[indexName] = -1; // Reset index after selection
             });
         });
-        if (filteredItems.length > 0) {
+        if (items.length > 0) {
             dropdown.classList.add('show');
         } else {
             dropdown.classList.remove('show');
         }
     }
+
+    // Ensure Dropdown is Always Visible When Toggle Button is Clicked
+    function toggleDropdown(dropdown, items, inputElement, indexName) {
+        if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        } else {
+            populateDropdown(dropdown, items, inputElement, indexName);
+        }
+    }
+
+    // Event Listeners for Toggle Buttons
+    ownerToggle.addEventListener('click', function (event) {
+        event.stopPropagation(); // Prevent triggering document click
+        toggleDropdown(ownerDropdown, owners, ownerInput, 'owner');
+    });
+
+    industryToggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        toggleDropdown(industryDropdown, industries, industryInput, 'industry');
+    });
+
+    skillsToggle.addEventListener('click', function (event) {
+        event.stopPropagation(); // Prevent triggering document click
+        toggleDropdown(skillsDropdown, skills, skillsInput, 'skills');
+    });
+
+    systemsToggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        toggleDropdown(systemsDropdown, systemsMethods, systemsInput, 'systems');
+    });
+
+    // Handle Input Events to Show Dropdowns While Typing
+    ownerInput.addEventListener('input', function () {
+        const filteredOwners = filterSuggestions(ownerInput.value, owners);
+        populateDropdown(ownerDropdown, filteredOwners, ownerInput, 'owner');
+    });
+
+    industryInput.addEventListener('input', function () {
+        const filteredIndustries = filterSuggestions(industryInput.value, industries);
+        populateDropdown(industryDropdown, filteredIndustries, industryInput, 'industry');
+    });
+
+    skillsInput.addEventListener('input', function () {
+        const filteredSkills = filterSuggestions(skillsInput.value, skills);
+        populateDropdown(skillsDropdown, filteredSkills, skillsInput, 'skills');
+    });
+
+    systemsInput.addEventListener('input', function () {
+        const filteredSystems = filterSuggestions(systemsInput.value, systemsMethods);
+        populateDropdown(systemsDropdown, filteredSystems, systemsInput, 'systems');
+    });
 
     // Handle Key Down Events for Navigation
     function handleKeyDown(event, dropdown, items, inputElement, indexName) {
@@ -477,57 +527,6 @@
         // Update dropdown with the new highlighted item
         populateDropdown(dropdown, items, inputElement, indexName);
     }
-
-    // Event Listeners for Input Fields
-    ownerInput.addEventListener('input', () => {
-        currentIndexes.owner = -1; // Reset index on new input
-        populateDropdown(ownerDropdown, owners, ownerInput, 'owner');
-    });
-    industryInput.addEventListener('input', () => {
-        currentIndexes.industry = -1; // Reset index on new input
-        populateDropdown(industryDropdown, industries, industryInput, 'industry');
-    });
-    skillsInput.addEventListener('input', () => {
-        currentIndexes.skills = -1; // Reset index on new input
-        populateDropdown(skillsDropdown, skills, skillsInput, 'skills');
-    });
-    systemsInput.addEventListener('input', () => {
-        currentIndexes.systems = -1; // Reset index on new input
-        populateDropdown(systemsDropdown, systemsMethods, systemsInput, 'systems');
-    });
-
-    // Event Listeners for Toggle Buttons
-    ownerToggle.addEventListener('click', function (event) {
-        event.stopPropagation(); // Prevent triggering document click
-        if (!ownerDropdown.classList.contains('show')) {
-            populateDropdown(ownerDropdown, owners, ownerInput, 'owner');
-        }
-        ownerDropdown.classList.toggle('show');
-    });
-
-    industryToggle.addEventListener('click', function (event) {
-        event.stopPropagation();
-        if (!industryDropdown.classList.contains('show')) {
-            populateDropdown(industryDropdown, industries, industryInput, 'industry');
-        }
-        industryDropdown.classList.toggle('show');
-    });
-
-    skillsToggle.addEventListener('click', function (event) {
-        event.stopPropagation(); // Prevent triggering document click
-        if (!skillsDropdown.classList.contains('show')) {
-            populateDropdown(skillsDropdown, skills, skillsInput, 'skills');
-        }
-        skillsDropdown.classList.toggle('show');
-    });
-
-    systemsToggle.addEventListener('click', function (event) {
-        event.stopPropagation();
-        if (!systemsDropdown.classList.contains('show')) {
-            populateDropdown(systemsDropdown, systemsMethods, systemsInput, 'systems');
-        }
-        systemsDropdown.classList.toggle('show');
-    });
 
     // Handle Keydown for Inputs
     ownerInput.addEventListener('keydown', (event) => handleKeyDown(event, ownerDropdown, owners, ownerInput, 'owner'));
@@ -597,3 +596,4 @@
 
 </body>
 </html>
+
