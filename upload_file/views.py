@@ -75,9 +75,9 @@ def file_upload(request):
                                 row['Industry'] = industry
                                 row['Skills'] = skills
                                 row['Systems & Method'] = systems_methods
-                                row['Contact Owner'] = 'Alessio Montaruli'  # Always set to Alessio Montaruli
+                                row['Contact Owner'] = 'Owner1'  # Always set to 'Owner1'
                                 row['Pipeline'] = 'All Jobs'  # Always set to All Jobs
-                                row['Ticket Owner'] = 'Alessio Montaruli'  # Always set to Alessio Montaruli
+                                row['Ticket Owner'] = 'Owner1'  # Always set to 'Owner1'
                                 row['Ticket Status'] = 'Linkedin Message'  # Always set to Linkedin Message
 
                                 # Filter only necessary columns in each row
